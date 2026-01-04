@@ -1,7 +1,49 @@
+"use client"
+
 import Link from "next/link"
 import Navigation from "@/components/landing-page/Navigation"
+import { authClient } from "@/lib/auth-client"
+import { handleApiError } from "@/lib/api"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 export default function SignInPage() {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  const handleEmailSignIn = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setLoading(true)
+
+    try {
+      await authClient.signIn.email({
+        email,
+        password,
+      })
+      router.push("/dashboard")
+    } catch (err: any) {
+      setError(handleApiError(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    setError("")
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+      })
+    } catch (err: any) {
+      setError(handleApiError(err))
+    }
+  }
+
   return (
     <>
       <Navigation />
@@ -70,8 +112,60 @@ export default function SignInPage() {
                     </p>
                   </div>
 
+                  {error && (
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-lg mb-4 font-body text-sm">
+                      {error}
+                    </div>
+                  )}
+
+                  {/* Email/Password Form */}
+                  <form onSubmit={handleEmailSignIn} className="space-y-4 mb-4">
+                    <div>
+                      <input
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-background/50 border-2 border-foreground/10 focus:border-brass focus:outline-none font-body"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-background/50 border-2 border-foreground/10 focus:border-brass focus:outline-none font-body"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                    <button 
+                      type="submit"
+                      disabled={loading}
+                      className="w-full btn-skeuo px-8 py-4 rounded-xl font-body font-bold text-lg text-foreground disabled:opacity-50"
+                    >
+                      {loading ? "Signing in..." : "Sign In with Email"}
+                    </button>
+                  </form>
+
+                  {/* Divider */}
+                  <div className="relative my-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-foreground/10"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-background text-debossed font-body">Or</span>
+                    </div>
+                  </div>
+
                   <div className="space-y-4">
-                    <button className="w-full btn-skeuo px-8 py-4 rounded-xl font-body font-bold text-lg text-foreground flex items-center justify-center gap-2">
+                    <button 
+                      onClick={handleGoogleSignIn}
+                      className="w-full btn-skeuo px-8 py-4 rounded-xl font-body font-bold text-lg text-foreground flex items-center justify-center gap-2"
+                    >
                       <svg className="w-5 h-5" viewBox="0 0 24 24">
                         <path
                           fill="currentColor"
