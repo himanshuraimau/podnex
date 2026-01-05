@@ -1,24 +1,18 @@
-import { Merriweather, Open_Sans, Courier_Prime } from "next/font/google"
+import { Cormorant_Garamond, Inter } from "next/font/google"
 
 import "@workspace/ui/globals.css"
 import { Providers } from "@/components/providers"
 
-const fontHeading = Merriweather({
-  weight: ["400", "700", "900"],
+const fontSerif = Cormorant_Garamond({
+  weight: ["300", "400", "500", "600", "700"],
   subsets: ["latin"],
-  variable: "--font-heading",
+  variable: "--font-serif",
 })
 
-const fontBody = Open_Sans({
-  weight: ["400", "500", "600"],
+const fontSans = Inter({
+  weight: ["300", "400", "500", "600"],
   subsets: ["latin"],
-  variable: "--font-body",
-})
-
-const fontMono = Courier_Prime({
-  weight: ["400", "700"],
-  subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-sans",
 })
 
 export default function RootLayout({
@@ -29,7 +23,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} font-body antialiased`}
+        className={`${fontSerif.variable} ${fontSans.variable} antialiased`}
+        style={{
+          fontFamily: "var(--font-sans)",
+        }}
       >
         <Providers>{children}</Providers>
       </body>
