@@ -100,11 +100,13 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -113,6 +115,22 @@
 
   ::selection {
     @apply bg-primary/20 text-foreground;
+  }
+
+  /* Container adjustments for better centering */
+  .container {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: max(1.5rem, 8vw);
+    padding-right: max(1.5rem, 8vw);
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: max(3rem, 10vw);
+      padding-right: max(3rem, 10vw);
+    }
   }
 }
 

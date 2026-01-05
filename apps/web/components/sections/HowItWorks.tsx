@@ -33,7 +33,7 @@ const steps = [
 const HowItWorks = () => {
   return (
     <section className="py-32 relative bg-surface/20">
-      <div className="container mx-auto px-6 lg:px-12">
+      <div className="container mx-auto">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}

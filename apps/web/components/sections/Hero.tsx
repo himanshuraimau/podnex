@@ -8,7 +8,7 @@ import Image from "next/image";
 const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center pt-20">
-      <div className="container mx-auto px-6 lg:px-12">
+      <div className="container mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Column - Content */}
           <motion.div

@@ -21,7 +21,7 @@ const integrations = [
 const Integrations = () => {
   return (
     <section className="py-32 relative">
-      <div className="container mx-auto px-6 lg:px-12">
+      <div className="container mx-auto">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Column - Content */}
           <motion.div

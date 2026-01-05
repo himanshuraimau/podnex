@@ -56,7 +56,7 @@ const AnimatedNumber = ({ value, suffix, prefix }: { value: number; suffix: stri
 const Metrics = () => {
   return (
     <section className="py-24 relative border-y border-border/20">
-      <div className="container mx-auto px-6 lg:px-12">
+      <div className="container mx-auto">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           {stats.map((stat, index) => (
             <motion.div

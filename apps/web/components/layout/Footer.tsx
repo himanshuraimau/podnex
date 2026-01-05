@@ -13,7 +13,7 @@ const footerLinks = {
 const Footer = () => {
   return (
     <footer className="py-20 border-t border-border/30">
-      <div className="container mx-auto px-6 lg:px-12">
+      <div className="container mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-6 gap-12 mb-16">
           {/* Logo & Description */}
           <div className="col-span-2">

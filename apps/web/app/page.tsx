@@ -14,7 +14,7 @@ import CTA from "@/components/sections/CTA";
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-background relative overflow-x-hidden">
       {/* Grain overlay */}
       <div className="grain-overlay" />
       
@@ -22,7 +22,7 @@ export default function Page() {
       <Navbar />
       
       {/* Main Content */}
-      <main>
+      <main className="w-full">
         <Hero />
         <Metrics />
         <Features />
