@@ -97,7 +97,7 @@ const Hero = () => {
                 className="relative z-10 w-full h-full animate-float"
               >
                 <Image
-                  src="/soundwave-orb.png"
+                  src="/image.png"
                   alt="Abstract soundwave orb visualization"
                   width={600}
                   height={600}
