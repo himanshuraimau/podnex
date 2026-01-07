@@ -48,11 +48,11 @@ export default function SignUpPage() {
         name: values.name,
         email: values.email,
         password: values.password,
-        callbackURL: "/",
+        callbackURL: "/dashboard",
       }, {
         onSuccess: () => {
           toast.success("Account created successfully");
-          router.push("/");
+          router.push("/dashboard");
         },
         onError: (ctx) => {
           toast.error(ctx.error.message);

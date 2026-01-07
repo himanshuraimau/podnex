@@ -45,7 +45,7 @@
   npm install --save-dev typescript @types/node @types/express ts-node-dev
   ```
 
-- [ ] **Install Core Dependencies**
+- [x] **Install Core Dependencies**
   ```bash
   npm install prisma @prisma/client
   npm install bullmq ioredis
@@ -58,7 +58,7 @@
   npm install express-rate-limit
   ```
 
-- [ ] **Database Setup**
+- [x] **Database Setup**
   - Configure PostgreSQL (local or hosted)
   - Initialize Prisma: `npx prisma init`
   - Set `DATABASE_URL` in `.env`
@@ -67,7 +67,7 @@
   - Install Redis locally or use managed service (Upstash, Redis Cloud)
   - Set `REDIS_URL` in `.env`
 
-- [ ] **Environment Variables**
+- [x] **Environment Variables**
   - Copy all required env vars from plan
   - Set up `.env.example` template
   - Document all required credentials
@@ -81,7 +81,7 @@
   - Color palette: Deep black (#050505), warm off-white, blue-gray accents
   - Grain overlay effect for sophistication
 
-- [ ] **Install Additional Dependencies**
+- [x] **Install Additional Dependencies**
   ```bash
   cd apps/web
   npm install @tanstack/react-query
@@ -94,7 +94,7 @@
   npm install lucide-react # icons
   ```
 
-- [ ] **Configure API Client**
+- [x] **Configure API Client**
   - Set `NEXT_PUBLIC_API_URL` in `.env.local`
   - Create base API client structure
 
@@ -122,18 +122,18 @@
 
 #### 1.1 Database Schema Implementation
 
-- [ ] **Create Prisma Schema** (`packages/database/prisma/schema.prisma`)
-  - [ ] Extend existing User, Session, Account models (already done ✅)
-  - [ ] Add Podcast model
-  - [ ] Add PodcastJob model
-  - [ ] Add Subscription model
-  - [ ] Add UsageRecord model
-  - [ ] Add ApiKey model
-  - [ ] Add Webhook model
-  - [ ] Add WebhookDelivery model
-  - [ ] Add all enums (PodcastStatus, PodcastDuration, SubscriptionPlan, etc.)
+- [x] **Create Prisma Schema** (`packages/database/prisma/schema.prisma`)
+  - [x] Extend existing User, Session, Account models (already done ✅)
+  - [x] Add Podcast model
+  - [x] Add PodcastJob model
+  - [x] Add Subscription model
+  - [x] Add UsageRecord model
+  - [x] Add ApiKey model
+  - [x] Add Webhook model
+  - [x] Add WebhookDelivery model
+  - [x] Add all enums (PodcastStatus, PodcastDuration, SubscriptionPlan, etc.)
 
-- [ ] **Run Migrations**
+- [x] **Run Migrations**
   ```bash
   npx prisma migrate dev --name init_podcast_schema
   npx prisma generate
@@ -178,7 +178,7 @@
 - [ ] **Subscription Middleware** (`src/middleware/subscription.middleware.ts`)
   - [ ] `checkSubscriptionLimits` - Enforce limits on podcast creation
 
-- [ ] **Auto-create Subscription on User Registration**
+- [x] **Auto-create Subscription on User Registration**
   - Hook into Better Auth registration
   - Create FREE subscription automatically
 
@@ -189,7 +189,7 @@
 - [x] **Sign In Page** (Already exists)
 - [x] **Sign Up Page** (Already exists)
 
-- [ ] **Add Post-Auth Redirect**
+- [x] **Add Post-Auth Redirect**
   - Redirect to `/dashboard` after successful login
   - Redirect to `/signin` if not authenticated
 
