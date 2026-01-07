@@ -59,27 +59,27 @@
   ```
 
 - [x] **Database Setup**
-  - Configure PostgreSQL (local or hosted)
-  - Initialize Prisma: `npx prisma init`
-  - Set `DATABASE_URL` in `.env`
+  - [x] Configure PostgreSQL (local or hosted)
+  - [x] Initialize Prisma: `npx prisma init`
+  - [x] Set `DATABASE_URL` in `.env`
   
 - [ ] **Redis Setup**
-  - Install Redis locally or use managed service (Upstash, Redis Cloud)
-  - Set `REDIS_URL` in `.env`
+  - [ ] Install Redis locally or use managed service (Upstash, Redis Cloud)
+  - [ ] Set `REDIS_URL` in `.env`
 
 - [x] **Environment Variables**
-  - Copy all required env vars from plan
-  - Set up `.env.example` template
-  - Document all required credentials
-  - Note: No OAuth providers configured - email/password only
+  - [x] Copy all required env vars from plan
+  - [x] Set up `.env.example` template
+  - [x] Document all required credentials
+  - [x] Note: No OAuth providers configured - email/password only
 
 ### Frontend Tasks
 
 - [x] **Project Already Set Up** (Next.js, shadcn/ui configured)
-  - Design system: Dark theme with warm accents
-  - Fonts: Cormorant Garamond (serif, headings), Inter (sans, body)
-  - Color palette: Deep black (#050505), warm off-white, blue-gray accents
-  - Grain overlay effect for sophistication
+  - [x] Design system: Dark theme with warm accents
+  - [x] Fonts: Cormorant Garamond (serif, headings), Inter (sans, body)
+  - [x] Color palette: Deep black (#050505), warm off-white, blue-gray accents
+  - [x] Grain overlay effect for sophistication
 
 - [x] **Install Additional Dependencies**
   ```bash
@@ -95,8 +95,8 @@
   ```
 
 - [x] **Configure API Client**
-  - Set `NEXT_PUBLIC_API_URL` in `.env.local`
-  - Create base API client structure
+  - [x] Set `NEXT_PUBLIC_API_URL` in `.env.local`
+  - [x] Create base API client structure (health.api.ts, client.ts)
 
 ### DevOps Tasks
 
@@ -138,18 +138,20 @@
   npx prisma migrate dev --name init_podcast_schema
   npx prisma generate
   ```
+  - [x] Schema created with all models
+  - [ ] User needs to run `db:push` to sync to actual database
 
 - [ ] **Seed Database** (optional)
-  - Create seed script with sample data
-  - Create test users with different plans
+  - [ ] Create seed script with sample data
+  - [ ] Create test users with different plans
 
 #### 1.2 Authentication Routes
-
-- [x] **Better Auth Integration** (Already configured)
-  - Email and password authentication ✅
-  - Session-based auth working ✅
-  - Sign up/Sign in flows ✅
-  - Note: Google OAuth removed - keeping authentication simple with email/password only
+[x] Email and password authentication
+  - [x] Session-based auth working
+  - [x] Sign up/Sign in flows
+  - [x] Hooks configured with createAuthMiddleware
+  - [x] Auto-create subscription on signup
+  - [x] Note: Google OAuth removed - keeping authentication simple with email/password only
 
 - [ ] **Add Auth Middleware** (`src/middleware/auth.middleware.ts`)
   - [ ] `requireAuth` - Session validation
@@ -160,15 +162,13 @@
 - [ ] **User Routes** (`src/routes/user.routes.ts`)
   - [ ] `GET /api/v1/user/profile` - Get profile
   - [ ] `PATCH /api/v1/user/profile` - Update profile
+  - [ ] `GET /api/v1/user/profile` - Get profile
+  - [ ] `PATCH /api/v1/user/profile` - Update profile
   - [ ] `DELETE /api/v1/user/account` - Delete account
-
-#### 1.3 Subscription System Setup
-
-- [ ] **Subscription Service** (`src/services/subscription.service.ts`)
-  - [ ] `getSubscription(userId)` - Fetch subscription
+[ ] `getSubscription(userId)` - Fetch subscription
   - [ ] `checkLimits(userId)` - Validate usage against limits
   - [ ] `trackUsage(userId, minutes)` - Record usage
-  - [ ] `createDefaultSubscription(userId)` - Create FREE plan on signup
+  - [x] `createDefaultSubscription(userId)` - Create FREE plan on signup (done in auth hook)
   - [ ] `resetMonthlyUsage()` - Reset counters (cron job)
 
 - [ ] **Subscription Routes** (`src/routes/subscription.routes.ts`)
@@ -179,34 +179,43 @@
   - [ ] `checkSubscriptionLimits` - Enforce limits on podcast creation
 
 - [x] **Auto-create Subscription on User Registration**
+  - [x] Hook into Better Auth registration (hooks.after with createAuthMiddleware)
+  - [x] Create FREE subscription automatically (5 podcasts, 25 minutes limit)e limits on podcast creation
+
+- [x] **Auto-create Subscription on User Registration**
   - Hook into Better Auth registration
   - Create FREE subscription automatically
 
 ### Frontend Tasks
-
-#### 1.1 Auth Pages Enhancement
-
-- [x] **Sign In Page** (Already exists)
+  - [x] Created at apps/web/app/signin/page.tsx
+  
 - [x] **Sign Up Page** (Already exists)
+  - [x] Created at apps/web/app/signup/page.tsx
 
 - [x] **Add Post-Auth Redirect**
-  - Redirect to `/dashboard` after successful login
-  - Redirect to `/signin` if not authenticated
+  - [x] Redirect to `/dashboard` after successful signup
+  - [x] Redirect to `/signin` if not authenticated
 
-- [ ] **Auth Context/Hook**
-  - Use Better Auth React client
-  - Create `useAuth()` hook
-  - Implement protected route wrapper
+- [x] **Auth Context/Hook**
+  - [x] Use Better Auth React client (auth-client.ts configured)
+  - [x] Better Auth hooks available (useSession, signOut)
+  - [ ] Protected route wrapper not yet implemented
 
 #### 1.2 Settings - Profile Page
 
 - [ ] **Create Route** (`app/(dashboard)/settings/profile/page.tsx`)
+  - [ ] Not yet created (settings page exists with grid layout only)
+  
 - [ ] **Profile Form Component** (`components/settings/ProfileForm.tsx`)
-  - Name input
-  - Email display (read-only)
-  - Password change
-  - Avatar upload (optional)
-  - Delete account button (with confirmation)
+  - [ ] Name input
+  - [ ] Email display (read-only)
+  - [ ] Password change
+  - [ ] Avatar upload (optional)
+  - [ ] Delete account button (with confirmation)
+
+- [ ] **API Integration**
+  - [ ] Update profile mutation
+  - [ ] Delete account button (with confirmation)
 
 - [ ] **API Integration**
   - Update profile mutation
@@ -305,141 +314,161 @@
   - In job processor, call `trackUsage(userId, audioDuration)`
   - Create UsageRecord entry
   - Increment subscription counters
+x] **Create Dashboard Layout** (`app/(dashboard)/layout.tsx`)
+  - [x] Sidebar component with navigation
+  - [x] Header with breadcrumb navigation
+  - [x] Mobile responsive (collapsible sidebar with SidebarProvider)
+  - [x] Logout button in user dropdown
+  - [x] Apply current design system:
+    - [x] Use Cormorant Garamond for headings
+    - [x] Dark theme with warm accents
+    - [x] Grain overlay for sophistication (opacity 0.03)
+    - [x] Smooth transitions with cubic-bezier easing
 
-- [ ] **Usage Routes** (`src/routes/usage.routes.ts`)
-  - [ ] `GET /api/v1/user/usage` - Current period usage
-  - [ ] `GET /api/v1/user/usage/history` - Historical usage
-
-### Frontend Tasks
-
-#### 2.1 Dashboard Layout
-
-- [ ] **Create Dashboard Layout** (`app/(dashboard)/layout.tsx`)
-  - [ ] Sidebar component with navigation
-  - [ ] Header with user menu
-  - [ ] Mobile responsive (collapsible sidebar)
-  - [ ] Logout button
-  - [ ] Apply current design system:
-    - Use Cormorant Garamond for headings
-    - Dark theme with warm accents
+- [x] **Sidebar Navigation** (`components/dashboard/DashboardSidebar.tsx`)
+  - [x] Dashboard (home icon)
+  - [x] Podcasts (mic icon)
+  - [x] Analytics (chart icon)
+  - [x] Settings (gear icon)
+  - [x] Active state highlighting
+  - [x] Usage meter showing plan limits
+  - [x] User dropdown with profile and logoutcents
     - Grain overlay for sophistication
-    - Smooth transitions with cubic-bezier easing
+   x] **Create Dashboard Home** (`app/(dashboard)/dashboard/page.tsx`)
+  - [x] Welcome message with user name
+  - [x] Stats cards section
+  - [x] Recent podcasts section with empty state
+  
+- [x] **Stats Cards Component** (`components/dashboard/StatsCard.tsx`)
+  - [x] Component created and reusable
+  - [x] Displays icon, title, value, change
+  - [ ] Currently showing mock data (needs API integration)
 
-- [ ] **Sidebar Navigation** (`components/dashboard/DashboardSidebar.tsx`)
-  - Dashboard (home icon)
-  - Podcasts (mic icon)
-  - Analytics (chart icon)
-  - Settings (gear icon)
-  - Active state highlighting
+- [x] **Usage Meter Component** (`components/dashboard/UsageMeter.tsx`)
+  - [x] Integrated in sidebar (not separate component)
+  - [x] Visual progress bar
+  - [x] Shows plan usage
+  - [ ] Currently showing mock data (needs API integration)
 
-#### 2.2 Dashboard Home Page
+- [x] **Recent Podcasts Component** (`components/dashboard/RecentPodcasts.tsx`)
+  - [x] Component created
+  - [x] Grid layout ready
+  - [x] Empty state with illustration
+  - [ ] Currently no data (needs API integration)
 
-- [ ] **Create Dashboard Home** (`app/(dashboard)/dashboard/page.tsx`)
-- [ ] **Stats Cards Component** (`components/dashboard/StatsCard.tsx`)
-  - Total podcasts
-  - Total minutes generated
-  - This month's usage
-  - Plan name
-
-- [ ] **Usage Meter Component** (`components/dashboard/UsageMeter.tsx`)
-  - Visual progress bar
-  - X / Y podcasts used
-  - Days until reset
-
-- [ ] **Recent Podcasts Component** (`components/dashboard/RecentPodcasts.tsx`)
-  - Show last 6 podcasts
-  - Grid layout
-  - Link to full list
-
-- [ ] **Quick Action Button**
-  - Prominent "Create New Podcast" button
-
-#### 2.3 Podcasts List Page
-
-- [ ] **Create Podcasts Page** (`app/(dashboard)/podcasts/page.tsx`)
+- [x] **Quick Action Button**
+  - [x] "Create Your First Podcast" button in empty state
+  -x] **Create Podcasts Page** (`app/(dashboard)/podcasts/page.tsx`)
+  - [x] Page created with empty state
+  - [x] Mic icon illustration
+  - [x] "Create Your First Podcast" CTA
+  - [ ] No actual podcast list yet (needs API integration)
+  
 - [ ] **Podcast List Component** (`components/podcasts/PodcastList.tsx`)
-  - Grid/List view toggle
-  - Empty state
-  - Loading skeletons
-  - Pagination
+  - [ ] Grid/List view toggle
+  - [x] Empty state (done in page)
+  - [ ] Loading skeletons
+  - [ ] Pagination
 
 - [ ] **Podcast Card Component** (`components/podcasts/PodcastCard.tsx`)
-  - Thumbnail
-  - Title
-  - Status badge (Processing/Completed/Failed)
-  - Duration
-  - Created date
-  - Actions menu (Play, Delete, Retry)
+  - [ ] Thumbnail
+  - [ ] Title
+  - [ ] Status badge (Processing/Completed/Failed)
+  - [ ] Duration
+  - [ ] Created date
+  - [ ] Actions menu (Play, Delete, Retry)
 
 - [ ] **Filters & Search**
-  - Search by title
-  - Filter by status
-  - Sort by date/duration
+  - [ ] Search by title
+  - [ ] Filter by status
+  - [ ] Sort by date/duration
 
 - [ ] **Real-time Status Updates**
-  - Use React Query with `refetchInterval`
-  - Poll every 2 seconds for processing podcasts
-  - Stop polling when complete
-
-#### 2.4 Create Podcast Page
-
-- [ ] **Create Form Page** (`app/(dashboard)/podcasts/new/page.tsx`)
+  - [ ] Use React Query with `refetchInterval`
+  -x] **Create Form Page** (`app/(dashboard)/podcasts/new/page.tsx`)
+  - [x] Page created with placeholder
+  - [ ] Shows "Coming Soon" message
+  - [ ] No actual form implementation yet
+  
 - [ ] **Multi-step Form** (`components/podcasts/CreatePodcastForm.tsx`)
-  - Step 1: Content input (textarea)
-  - Step 2: Configuration (duration, title)
-  - Step 3: Review & submit
+  - [ ] Step 1: Content input (textarea)
+  - [ ] Step 2: Configuration (duration, title)
+  - [ ] Step 3: Review & submit
 
 - [ ] **Form Validation**
-  - React Hook Form + Zod
-  - Min/max length validation
-  - Real-time character counter
+  - [ ] React Hook Form + Zod
+  - [ ] Min/max length validation
+  - [ ] Real-time character counter
 
 - [ ] **Submit & Redirect**
-  - Show loading state
-  - Redirect to podcast detail on success
-  - Show error toast on failure
-
-#### 2.5 Podcast Detail Page
-
-- [ ] **Create Detail Page** (`app/(dashboard)/podcasts/[id]/page.tsx`)
+  - [ ] Show loading state
+  - [ ] Redirect to podcast detail on success
+  - [ ] Use React Query with `refetchInterval`
+  - [ ] Not yet created
+  
 - [ ] **Audio Player Component** (`components/podcasts/PodcastPlayer.tsx`)
-  - Play/pause
-  - Seek bar
-  - Volume control
-  - Playback speed
-  - Download button
+  - [ ] Play/pause
+  - [ ] Seek bar
+  - [ ] Volume control
+  - [ ] Playback speed
+  - [ ] Download button
 
 - [ ] **Progress Indicator** (`components/podcasts/ProgressIndicator.tsx`)
-  - Show only if status is "processing"
-  - Progress bar with percentage
-  - Current step text
-  - Elapsed time
+  - [ ] Show only if status is "processing"
+  - [ ] Progress bar with percentage
+  - [ ] Current step text
+  - [ ] Elapsed time
 
 - [ ] **Transcript Viewer** (`components/podcasts/TranscriptViewer.tsx`)
-  - Speaker-labeled segments
-  - Timestamps
-  - Click timestamp to seek
-  - Export options (TXT, SRT)
-  - Copy to clipboard
+  - [ ] Speaker-labeled segments
+  - [ ] Timestamps
+  - [ ] Click timestamp to seek
+  - [ ] Export options (TXT, SRT)
+  - [ ] Copy to clipboard
 
 - [ ] **Metadata Section**
-  - Created date
-  - Duration
-  - File size
-  - TTS provider
+  - [ ] Created date
+  - [ ] Duration
+  - [ ] File size
+  - [ ] TTS provider
 
 - [ ] **Actions**
-  - Share button
-  - Delete button (with confirmation)
-  - Retry button (if failed)
+  - [ ] Share button
+  - [ ] Delete button (with confirmation)
+  - [ ] Download button
 
-#### 2.6 API Client Implementation
+- [x] **Setup React Query** (`lib/query-client.ts`)
+  - [ ] Not explicitly created yet, but dependencies installed
+  - [ ] Configure QueryClient
+  - [ ] Default options
 
-- [ ] **Setup React Query** (`lib/query-client.ts`)
-  - Configure QueryClient
-  - Default options
+- [x] **API Client** (`lib/api/client.ts`)
+  - [x] Base request function created
+  - [x] Error handling
+  - [x] Auth token/cookie handling (Better Auth cookies)
 
-- [ ] **API Client** (`lib/api/client.ts`)
+- [ ] **Podcast API** (`lib/api/podcasts.ts`)
+  - [ ] `list()` - List podcasts
+  - [ ] `get(id)` - Get podcast
+  - [ ] `create(data)` - Create podcast
+  - [ ] `update(id, data)` - Update podcast
+  - [ ] `delete(id)` - Delete podcast
+  - [ ] `retry(id)` - Retry podcast
+  - [ ] `getStatus(id)` - Get status
+
+- [ ] **User API** (`lib/api/user.ts`)
+  - [ ] `getProfile()`
+  - [ ] `updateProfile(data)`
+  - [ ] `getSubscription()`
+  - [ ] `getUsage()`
+
+- [ ] **Custom Hooks** (`lib/hooks/`)
+  - [ ] `usePodcasts()` - List podcasts query
+  - [ ] `usePodcast(id)` - Single podcast query
+  - [ ] `useCreatePodcast()` - Create mutation
+  - [ ] `useDeletePodcast()` - Delete mutation
+  - [ ] `useSubscription()` - Subscription query
+  - [ ] ] **API Client** (`lib/api/client.ts`)
   - Base request function
   - Error handling
   - Auth token/cookie handling
