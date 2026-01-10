@@ -21,6 +21,12 @@ model User {
 
   sessions      Session[]
   accounts      Account[]
+
+  // Relations
+  podcasts      Podcast[]
+  subscription  Subscription?
+  apiKeys       ApiKey[]
+  webhooks      Webhook[]
 }
 
 model Session {
@@ -59,4 +65,226 @@ model Verification {
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+// PodNex Models
+
+model Podcast {
+  id              String          @id @default(cuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Content
+  title           String?         // Optional user-provided title
+  noteId          String?         // Reference to user's note/document
+  noteContent     String          @db.Text
+  duration        PodcastDuration @default(SHORT) // SHORT or LONG
+  
+  // Generation metadata
+  status          PodcastStatus   @default(QUEUED)
+  progress        Int             @default(0) // 0-100
+  currentStep     String?
+  
+  // Results
+  audioUrl        String?
+  audioDuration   Int?            // in seconds
+  audioSize       Int?            // in bytes
+  transcript      Json?           // TranscriptSegment[]
+  
+  // Voice settings
+  hostVoice       String          @default("host")
+  guestVoice      String          @default("guest")
+  ttsProvider     String          @default("unreal")
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  startedAt       DateTime?
+  completedAt     DateTime?
+  
+  // Error handling
+  error           String?
+  retryCount      Int             @default(0)
+  
+  // Soft delete
+  deletedAt       DateTime?
+  
+  // Relations
+  jobs            PodcastJob[]
+  
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+model PodcastJob {
+  id          String        @id @default(cuid())
+  jobId       String        @unique // External job queue ID
+  podcastId   String
+  podcast     Podcast       @relation(fields: [podcastId], references: [id], onDelete: Cascade)
+  
+  status      JobStatus     @default(QUEUED)
+  progress    Int           @default(0)
+  currentStep String?
+  
+  // Job metadata
+  attempts    Int           @default(0)
+  priority    Int           @default(0)
+  
+  // Timestamps
+  createdAt   DateTime      @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+  
+  // Error tracking
+  error       String?
+  stackTrace  String?       @db.Text
+  
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Subscription {
+  id                String              @id @default(cuid())
+  userId            String              @unique
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Plan details
+  plan              SubscriptionPlan    @default(FREE)
+  status            SubscriptionStatus  @default(ACTIVE)
+  
+  // Billing (Dodo Payments)
+  dodoCustomerId        String?         @unique
+  dodoSubscriptionId    String?         @unique
+  dodoProductId         String?
+  
+  // Limits
+  monthlyPodcastLimit   Int             @default(5)
+  monthlyMinutesLimit   Int             @default(25) // Total audio minutes
+  
+  // Usage tracking (resets monthly)
+  currentPodcastCount   Int             @default(0)
+  currentMinutesUsed    Int             @default(0)
+  usageResetDate        DateTime
+  
+  // Timestamps
+  currentPeriodStart    DateTime        @default(now())
+  currentPeriodEnd      DateTime?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  canceledAt            DateTime?
+
+  // Usage History
+  usageHistory          UsageRecord[]
+}
+
+model UsageRecord {
+  id              String        @id @default(cuid())
+  subscriptionId  String
+  subscription    Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  
+  podcastId       String?
+  amount          Int           // e.g., minutes used
+  type            String        // e.g., "generation_minutes"
+  
+  recordedAt      DateTime      @default(now())
+
+  @@index([recordedAt])
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name        String
+  key         String    @unique // Hashed
+  prefix      String    // Display prefix
+  
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  
+  scopes      String[]  @default(["read", "write"])
+  rateLimit   Int       @default(60) // Requests per minute
+  
+  @@index([key])
+}
+
+model Webhook {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  url         String
+  secret      String
+  events      WebhookEvent[]
+  active      Boolean         @default(true)
+  
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  deliveries  WebhookDelivery[]
+  
+  @@index([userId])
+}
+
+model WebhookDelivery {
+  id          String    @id @default(cuid())
+  webhookId   String
+  webhook     Webhook   @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  
+  event       WebhookEvent
+  payload     Json
+  
+  responseStatus Int?
+  responseBody   String?
+  
+  success     Boolean
+  error       String?
+  
+  createdAt   DateTime  @default(now())
+  
+  @@index([webhookId, createdAt])
+}
+
+enum PodcastDuration {
+  SHORT  // 3-5 minutes
+  LONG   // 8-10 minutes
+}
+
+enum PodcastStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum JobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum SubscriptionPlan {
+  FREE
+  STARTER
+  PRO
+  BUSINESS
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  INCOMPLETE
+}
+
+enum WebhookEvent {
+  PODCAST_CREATED
+  PODCAST_PROCESSING
+  PODCAST_COMPLETED
+  PODCAST_FAILED
 }

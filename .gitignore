@@ -36,3 +36,6 @@ npm-debug.log*
 
 # Bun (not used - pnpm only)
 bun.lockb
+
+# shell file
+dev.sh

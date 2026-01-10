@@ -26,11 +26,17 @@
   "pnpm": {
     "ignoredBuiltDependencies": [
       "@prisma/engines",
+      "@tailwindcss/oxide",
+      "core-js-pure",
+      "esbuild",
       "prisma",
       "sharp"
     ],
     "onlyBuiltDependencies": [
-      "@prisma/client"
+      "@prisma/client",
+      "@tailwindcss/oxide",
+      "core-js-pure",
+      "esbuild"
     ]
   }
 }
