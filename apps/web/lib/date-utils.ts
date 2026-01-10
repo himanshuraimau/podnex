@@ -1,4 +1,18 @@
 /**
+ * Format duration in seconds to human readable format (e.g., "5:32", "1:05:32")
+ */
+export function formatDuration(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  return `${minutes}:${secs.toString().padStart(2, '0')}`;
+}
+
+/**
  * Format a date as relative time (e.g., "2 hours ago", "3 days ago")
  */
 export function formatDistanceToNow(date: Date, options?: { addSuffix?: boolean }): string {
