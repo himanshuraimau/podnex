@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
@@ -27,85 +27,12 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-// Mock data for development
-const MOCK_PODCASTS: Podcast[] = [
-  {
-    id: "1",
-    userId: "user-1",
-    title: "Introduction to AI and Machine Learning",
-    noteContent: "This is a comprehensive guide to AI...",
-    status: "COMPLETED",
-    duration: "LONG",
-    audioUrl: "https://example.com/audio1.mp3",
-    audioDuration: 532,
-    transcript: "Welcome to today's episode...",
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "2",
-    userId: "user-1",
-    title: "Deep Dive into Neural Networks",
-    noteContent: "Understanding how neural networks work...",
-    status: "PROCESSING",
-    duration: "SHORT",
-    progress: 65,
-    currentStep: "Generating audio...",
-    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "3",
-    userId: "user-1",
-    title: "The Future of Web Development",
-    noteContent: "Exploring upcoming trends in web dev...",
-    status: "COMPLETED",
-    duration: "SHORT",
-    audioUrl: "https://example.com/audio3.mp3",
-    audioDuration: 312,
-    transcript: "Today we'll discuss...",
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "4",
-    userId: "user-1",
-    title: "Understanding TypeScript Generics",
-    noteContent: "A deep dive into TypeScript's type system...",
-    status: "FAILED",
-    duration: "LONG",
-    errorMessage: "Failed to generate audio. Please try again.",
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "5",
-    userId: "user-1",
-    title: "Building Scalable APIs with Node.js",
-    noteContent: "Best practices for API development...",
-    status: "QUEUED",
-    duration: "SHORT",
-    createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "6",
-    userId: "user-1",
-    title: "React Server Components Explained",
-    noteContent: "Understanding the new React architecture...",
-    status: "COMPLETED",
-    duration: "LONG",
-    audioUrl: "https://example.com/audio6.mp3",
-    audioDuration: 615,
-    transcript: "Let's talk about React Server Components...",
-    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-];
+import { toast } from "sonner";
 
 export default function PodcastsPage() {
   const router = useRouter();
+  const [allPodcasts, setAllPodcasts] = useState<Podcast[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [filters, setFilters] = useState<Filters>({
     status: "ALL",
@@ -114,7 +41,30 @@ export default function PodcastsPage() {
     limit: 12,
   });
 
-  const allPodcasts = MOCK_PODCASTS;
+  // Fetch podcasts from API
+  useEffect(() => {
+    const fetchPodcasts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/podcasts');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch podcasts');
+        }
+        
+        const data = await response.json();
+        setAllPodcasts(data);
+      } catch (error) {
+        console.error('Error fetching podcasts:', error);
+        // Don't show toast on initial load - empty state will show
+        setAllPodcasts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPodcasts();
+  }, []);
 
   // Apply filters
   const filteredPodcasts = allPodcasts.filter((podcast) => {
@@ -165,12 +115,60 @@ export default function PodcastsPage() {
     router.push(`/dashboard/podcasts/${podcast.id}`);
   };
 
-  const handleDelete = (podcast: Podcast) => {
-    console.log("Delete podcast:", podcast.id);
+  const handleDelete = async (podcast: Podcast) => {
+    if (!confirm('Are you sure you want to delete this podcast?')) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/podcasts/${podcast.id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete podcast');
+      }
+      
+      // Remove from local state
+      setAllPodcasts(allPodcasts.filter(p => p.id !== podcast.id));
+      
+      toast.success('Podcast deleted', {
+        description: 'Your podcast has been successfully deleted.',
+      });
+    } catch (error) {
+      console.error('Error deleting podcast:', error);
+      toast.error('Failed to delete podcast', {
+        description: 'Please try again.',
+      });
+    }
   };
 
-  const handleRetry = (podcast: Podcast) => {
-    console.log("Retry podcast:", podcast.id);
+  const handleRetry = async (podcast: Podcast) => {
+    try {
+      const response = await fetch(`/api/podcasts/${podcast.id}/retry`, {
+        method: 'POST',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to retry podcast generation');
+      }
+      
+      const updatedPodcast = await response.json();
+      
+      // Update local state
+      setAllPodcasts(allPodcasts.map(p => 
+        p.id === podcast.id ? updatedPodcast : p
+      ));
+      
+      toast.success('Podcast queued for regeneration', {
+        description: 'Your podcast will be processed shortly.',
+      });
+    } catch (error) {
+      console.error('Error retrying podcast:', error);
+      toast.error('Failed to retry podcast', {
+        description: 'Please try again.',
+      });
+    }
   };
 
   const handleViewDetails = (podcast: Podcast) => {
@@ -180,6 +178,26 @@ export default function PodcastsPage() {
   const handlePageChange = (page: number) => {
     setFilters({ ...filters, page });
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="h-9 w-48 bg-muted animate-pulse rounded" />
+            <div className="h-4 w-64 bg-muted animate-pulse rounded mt-2" />
+          </div>
+          <div className="h-10 w-40 bg-muted animate-pulse rounded" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
