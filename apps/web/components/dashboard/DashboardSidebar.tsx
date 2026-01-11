@@ -105,7 +105,7 @@ export function DashboardSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         
-        <SidebarGroup>
+        <SidebarGroup className="group-data-[collapsible=icon]:hidden">
            <SidebarGroupLabel>Usage</SidebarGroupLabel>
            <SidebarGroupContent>
              <div className="px-2 py-2">

@@ -401,25 +401,39 @@ x] **Create Dashboard Layout** (`app/(dashboard)/layout.tsx`)
 - [ ] **Real-time Status Updates** (pending API integration)
   - [ ] Use React Query with `refetchInterval`
 
-#### 2.6 Create Podcast Form (Frontend)
-  -x] **Create Form Page** (`app/(dashboard)/podcasts/new/page.tsx`)
-  - [x] Page created with placeholder
+#### 2.6 Create Podcast Form (Frontend) ✅
 
 - [x] **Create Form Page** (`app/(dashboard)/podcasts/new/page.tsx`)
-  - [x] Page created with placeholder
-  - [x] Shows "Coming Soon" messagedcasts/CreatePodcastForm.tsx`)
-  - [ ] Step 1: Content input (textarea)
-  - [ ] Step 2: Configuration (duration, title)
-  - [ ] Step 3: Review & submit
+  - [x] Page created with complete multi-step wizard
+  - [x] Step 1: Content input (textarea with placeholder formatting)
+  - [x] Step 2: Configuration (duration, title, voice settings, advanced settings)
+  - [x] Step 3: Review & submit
+  - [x] Step indicators with progress tracking
+  - [x] Navigation between steps with validation
 
-- [ ] **Form Validation**
-  - [ ] React Hook Form + Zod
-  - [ ] Min/max length validation
-  - [ ] Real-time character counter
+- [x] **Form Validation**
+  - [x] React Hook Form + Zod integration
+  - [x] Min/max length validation (100-10,000 characters)
+  - [x] Real-time character counter with color coding
+  - [x] Word count display
+  - [x] Validation feedback messages
+  - [x] Minimum requirement highlighted in description
 
-- [ ] **Submit & Redirect**
-  - [ ] Show loading state
-  - [ ] Redirect to podcast detail on success
+- [x] **Submit & Redirect**
+  - [x] Show loading state with animation
+  - [x] Redirect to podcast list on success (mock)
+  - [x] Toast notifications for success/error
+
+- [x] **Additional Features**
+  - [x] Paste from clipboard functionality
+  - [x] Upload .txt file support
+  - [x] Duration selection (Short/Medium/Long)
+  - [x] Voice selection for host and guest with preview buttons
+  - [x] Optional title input with auto-generation fallback
+  - [x] Advanced settings (webhook URL, note ID)
+  - [x] Review step with content and configuration summary
+  - [x] Credit cost indicator
+  - [x] Clean code formatting and proper spacing
   - [ ] Use React Query with `refetchInterval`
   - [ ] Not yet created
   mponent** (`components/podcasts/PodcastPlayer.tsx`)

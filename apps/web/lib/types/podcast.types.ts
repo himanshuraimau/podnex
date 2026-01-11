@@ -15,12 +15,27 @@ export interface Podcast {
   duration: PodcastDuration;
   audioUrl?: string;
   audioDuration?: number; // in seconds
-  transcript?: string;
+  audioSize?: number; // in bytes
+  transcript?: string | TranscriptSegment[];
   errorMessage?: string;
-  progress?: number; // 0-100
-  currentStep?: string; // "Generating script...", "Creating audio..."
+  progress?: number; // 0-100 (for PROCESSING status)
+  currentStep?: string; // "Generating script...", "Creating audio...", etc.
   createdAt: string;
   updatedAt: string;
+  completedAt?: string; // When podcast generation completed
+  failedAt?: string; // When podcast generation failed
+  ttsProvider?: string;
+  hostVoice?: string;
+  guestVoice?: string;
+  jobId?: string; // BullMQ job ID for tracking
+  webhookUrl?: string; // Custom webhook URL
+  noteId?: string; // Reference to original note
+}
+
+export interface TranscriptSegment {
+  timestamp: number; // in seconds
+  speaker: 'HOST' | 'GUEST';
+  text: string;
 }
 
 export interface PodcastFilters {
