@@ -156,6 +156,8 @@ model Subscription {
   dodoCustomerId        String?         @unique
   dodoSubscriptionId    String?         @unique
   dodoProductId         String?
+  billingCycle          String          @default("monthly") // monthly or yearly
+  cancelAtPeriodEnd     Boolean         @default(false)
   
   // Limits
   monthlyPodcastLimit   Int             @default(5)

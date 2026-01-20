@@ -262,4 +262,81 @@ export class PodcastService {
 
         return { success: true, jobId };
     }
+
+    static async getStats(userId: string) {
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const [
+            totalPodcasts,
+            completedPodcasts,
+            processingPodcasts,
+            failedPodcasts,
+            queuedPodcasts,
+            podcastsThisMonth,
+            aggregates,
+        ] = await Promise.all([
+            prisma.podcast.count({
+                where: { userId, deletedAt: null },
+            }),
+            prisma.podcast.count({
+                where: { userId, status: "COMPLETED", deletedAt: null },
+            }),
+            prisma.podcast.count({
+                where: { userId, status: "PROCESSING", deletedAt: null },
+            }),
+            prisma.podcast.count({
+                where: { userId, status: "FAILED", deletedAt: null },
+            }),
+            prisma.podcast.count({
+                where: { userId, status: "QUEUED", deletedAt: null },
+            }),
+            prisma.podcast.count({
+                where: {
+                    userId,
+                    deletedAt: null,
+                    createdAt: { gte: firstDayOfMonth },
+                },
+            }),
+            prisma.podcast.aggregate({
+                where: {
+                    userId,
+                    status: "COMPLETED",
+                    deletedAt: null,
+                },
+                _sum: {
+                    audioDuration: true,
+                    audioSize: true,
+                },
+            }),
+        ]);
+
+        // Calculate minutes this month
+        const monthlyPodcasts = await prisma.podcast.findMany({
+            where: {
+                userId,
+                status: "COMPLETED",
+                deletedAt: null,
+                createdAt: { gte: firstDayOfMonth },
+            },
+            select: { audioDuration: true },
+        });
+
+        const minutesThisMonth = monthlyPodcasts.reduce(
+            (sum, p) => sum + (p.audioDuration || 0),
+            0
+        ) / 60; // Convert seconds to minutes
+
+        return {
+            totalPodcasts,
+            completedPodcasts,
+            processingPodcasts,
+            failedPodcasts,
+            queuedPodcasts,
+            totalDuration: aggregates._sum.audioDuration || 0,
+            totalSize: aggregates._sum.audioSize || 0,
+            podcastsThisMonth,
+            minutesThisMonth: Math.round(minutesThisMonth),
+        };
+    }
 }

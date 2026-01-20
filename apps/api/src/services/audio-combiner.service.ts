@@ -97,7 +97,7 @@ export class AudioCombinerService {
     }
 
     /**
-     * Merge multiple audio files
+     * Merge multiple audio files with normalization and fade effects
      */
     private static mergeFiles(
         inputFiles: string[],
@@ -111,16 +111,24 @@ export class AudioCombinerService {
                 command.input(file);
             });
 
-            // Create filter complex for concatenation
-            const filterComplex = inputFiles
+            // Create filter complex for concatenation with normalization and fades
+            const concatFilter = inputFiles
                 .map((_, i) => `[${i}:a]`)
-                .join("") + `concat=n=${inputFiles.length}:v=0:a=1[out]`;
+                .join("") + `concat=n=${inputFiles.length}:v=0:a=1[concat]`;
+
+            // Add loudness normalization (EBU R128 standard)
+            // Add fade in (0.5s) and fade out (0.5s)
+            const filterComplex = [
+                concatFilter,
+                "[concat]loudnorm=I=-16:TP=-1.5:LRA=11[normalized]",
+                "[normalized]afade=t=in:st=0:d=0.5,afade=t=out:st=0:d=0.5[out]"
+            ].join(";");
 
             command
                 .complexFilter(filterComplex)
                 .outputOptions(["-map", "[out]"])
                 .audioCodec("libmp3lame")
-                .audioBitrate("128k")
+                .audioBitrate("192k") // Increased from 128k for better quality
                 .audioFrequency(44100)
                 .output(outputPath)
                 .on("end", () => resolve())

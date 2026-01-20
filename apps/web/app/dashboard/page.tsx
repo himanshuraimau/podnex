@@ -12,7 +12,7 @@ export default function DashboardPage() {
   const { data: session } = useSession();
   const userName = session?.user?.name || "User";
   const firstName = userName.split(" ")[0];
-  
+
   const [stats, setStats] = useState({
     totalPodcasts: 0,
     totalMinutes: 0,
@@ -27,8 +27,16 @@ export default function DashboardPage() {
       try {
         const response = await fetch('/api/podcasts/stats');
         if (response.ok) {
-          const data = await response.json();
-          setStats(data);
+          const result = await response.json();
+          // Handle both {data: ...} and direct response
+          const data = result.data || result;
+          setStats({
+            totalPodcasts: data.totalPodcasts || 0,
+            totalMinutes: data.totalMinutes || 0,
+            planUsage: data.planUsage || 0,
+            monthlyLimit: data.monthlyLimit || 5,
+            monthlyUsed: data.monthlyUsed || 0,
+          });
         }
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -49,38 +57,38 @@ export default function DashboardPage() {
         </div>
         <div className="flex gap-2">
           <Button asChild size="lg" className="md:w-auto w-full">
-              <Link href="/dashboard/podcasts/new">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create New Podcast
-              </Link>
+            <Link href="/dashboard/podcasts/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Create New Podcast
+            </Link>
           </Button>
         </div>
       </div>
-      
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <StatsCard 
-            title="Total Podcasts" 
-            value={isLoading ? "..." : stats.totalPodcasts.toString()}
-            icon={Mic} 
-            description="Lifetime generated"
+        <StatsCard
+          title="Total Podcasts"
+          value={isLoading ? "..." : (stats?.totalPodcasts?.toString() || "0")}
+          icon={Mic}
+          description="Lifetime generated"
         />
-        <StatsCard 
-            title="Minutes Generated" 
-            value={isLoading ? "..." : `${stats.totalMinutes}m`}
-            icon={Clock} 
-            description="Total audio duration"
+        <StatsCard
+          title="Minutes Generated"
+          value={isLoading ? "..." : `${stats?.totalMinutes || 0}m`}
+          icon={Clock}
+          description="Total audio duration"
         />
-        <StatsCard 
-            title="Plan Usage" 
-            value={isLoading ? "..." : `${stats.planUsage}%`}
-            icon={Zap} 
-            description={`${stats.monthlyUsed}/${stats.monthlyLimit} podcasts this month`}
+        <StatsCard
+          title="Plan Usage"
+          value={isLoading ? "..." : `${stats?.planUsage || 0}%`}
+          icon={Zap}
+          description={`${stats?.monthlyUsed || 0}/${stats?.monthlyLimit || 5} podcasts this month`}
         />
       </div>
 
       <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-3">
         <div className="col-span-1 lg:col-span-3">
-           <RecentPodcasts />
+          <RecentPodcasts />
         </div>
       </div>
     </div>

@@ -67,6 +67,30 @@ export default function PodcastsPage() {
     fetchPodcasts();
   }, []);
 
+  // Polling for podcasts with processing/queued status
+  useEffect(() => {
+    // Check if there are any podcasts being processed or queued
+    const hasActiveProcessing = allPodcasts.some(
+      p => p.status === "PROCESSING" || p.status === "QUEUED"
+    );
+
+    if (hasActiveProcessing) {
+      const interval = setInterval(async () => {
+        try {
+          const response = await fetch('/api/podcasts');
+          if (response.ok) {
+            const result = await response.json();
+            setAllPodcasts(result.data || []);
+          }
+        } catch (error) {
+          console.error('Error polling podcasts:', error);
+        }
+      }, 3000); // Poll every 3 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [allPodcasts]);
+
   // Apply filters
   const filteredPodcasts = allPodcasts.filter((podcast) => {
     if (filters.status && filters.status !== "ALL") {

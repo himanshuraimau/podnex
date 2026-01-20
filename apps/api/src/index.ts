@@ -1,3 +1,4 @@
+import "./lib/env.js"; // Load environment variables FIRST
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -7,6 +8,7 @@ import { auth } from "./lib/auth.js";
 import { errorHandler, notFound } from "./middleware/index.js";
 import userRoutes from "./routes/user.routes.js";
 import podcastRoutes from "./routes/podcast.routes.js";
+import billingRoutes from "./routes/billing.routes.js";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
@@ -61,6 +63,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/podcasts", podcastRoutes);
+app.use("/api/v1/billing", billingRoutes);
 
 // Error handlers (must be last)
 app.use(notFound);

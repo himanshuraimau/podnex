@@ -37,3 +37,35 @@ export interface AuthResponse {
   error?: string;
   message?: string;
 }
+
+export interface UpdateProfileDto {
+  name?: string;
+  image?: string;
+}
+
+export type SubscriptionPlan = 'FREE' | 'STARTER' | 'PRO' | 'BUSINESS';
+export type SubscriptionStatus = 'ACTIVE' | 'CANCELED' | 'PAST_DUE' | 'PAUSED';
+
+export interface Subscription {
+  id: string;
+  userId: string;
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus;
+  podcastsLimit: number;
+  minutesLimit: number;
+  currentPodcasts: number;
+  currentMinutes: number;
+  periodStart: string;
+  periodEnd: string;
+  canceledAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UsageData {
+  totalPodcasts: number;
+  totalMinutes: number;
+  thisMonthPodcasts: number;
+  thisMonthMinutes: number;
+  subscription: Subscription;
+}

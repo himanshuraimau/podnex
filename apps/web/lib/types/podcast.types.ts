@@ -55,3 +55,36 @@ export interface PodcastListResponse {
 }
 
 export type ViewMode = 'grid' | 'list';
+
+// API DTOs
+export interface CreatePodcastDto {
+  noteContent: string;
+  duration: PodcastDuration;
+  title?: string;
+  hostVoice?: string;
+  guestVoice?: string;
+  webhookUrl?: string;
+  noteId?: string;
+}
+
+export interface UpdatePodcastDto {
+  title?: string;
+}
+
+export interface ListPodcastsParams {
+  page?: number;
+  limit?: number;
+  status?: PodcastStatus;
+  search?: string;
+  sort?: 'createdAt_desc' | 'createdAt_asc' | 'duration_desc' | 'duration_asc';
+}
+
+export interface PodcastStats {
+  totalPodcasts: number;
+  totalMinutes: number;
+  thisMonthPodcasts: number;
+  thisMonthMinutes: number;
+  completedPodcasts: number;
+  failedPodcasts: number;
+  processingPodcasts: number;
+}

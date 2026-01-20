@@ -18,13 +18,27 @@ export const updatePodcastSchema = z.object({
   noteContent: z.string().min(100).max(50000).optional(),
 });
 
-export const listPodcastsSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
-  status: z.enum(["QUEUED", "PROCESSING", "COMPLETED", "FAILED", "CANCELLED"]).optional(),
-  sort: z.enum(["createdAt", "updatedAt"]).default("createdAt"),
-  order: z.enum(["asc", "desc"]).default("desc"),
-});
+export const listPodcastsSchema = z.preprocess(
+  (data: any) => {
+    // Handle combined format like "createdAt_desc"
+    if (data.sort && typeof data.sort === 'string' && data.sort.includes('_')) {
+      const [sortField, sortOrder] = data.sort.split('_');
+      return {
+        ...data,
+        sort: sortField,
+        order: sortOrder,
+      };
+    }
+    return data;
+  },
+  z.object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+    status: z.enum(["QUEUED", "PROCESSING", "COMPLETED", "FAILED", "CANCELLED"]).optional(),
+    sort: z.enum(["createdAt", "updatedAt"]).default("createdAt"),
+    order: z.enum(["asc", "desc"]).default("desc"),
+  })
+);
 
 export type CreatePodcastInput = z.infer<typeof createPodcastSchema>;
 export type UpdatePodcastInput = z.infer<typeof updatePodcastSchema>;

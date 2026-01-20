@@ -17,10 +17,10 @@ export default function Page() {
     <div className="min-h-screen bg-background relative overflow-x-hidden">
       {/* Grain overlay */}
       <div className="grain-overlay" />
-      
+
       {/* Navigation */}
       <Navbar />
-      
+
       {/* Main Content */}
       <main className="w-full">
         <Hero />
@@ -35,7 +35,7 @@ export default function Page() {
         <FAQ />
         <CTA />
       </main>
-      
+
       {/* Footer */}
       <Footer />
     </div>

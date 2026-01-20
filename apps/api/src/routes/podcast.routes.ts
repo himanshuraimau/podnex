@@ -44,6 +44,16 @@ router.get(
     }
 );
 
+// Get stats
+router.get("/stats", requireAuth, async (req: AuthRequest, res, next) => {
+    try {
+        const stats = await PodcastService.getStats(req.user!.id);
+        res.json({ success: true, data: stats });
+    } catch (error) {
+        next(error);
+    }
+});
+
 // Get single podcast
 router.get("/:id", requireAuth, async (req: AuthRequest, res, next) => {
     try {

@@ -3,17 +3,17 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
-import { 
-  ArrowLeft, 
-  Share2, 
-  Download, 
+import {
+  ArrowLeft,
+  Share2,
+  Download,
   Trash2,
   Edit2,
   Check,
   X,
 } from "lucide-react";
 import { PodcastPlayer } from "@/components/podcasts/PodcastPlayer";
-import { ProgressIndicator } from "@/components/podcasts/ProgressIndicator";
+import { ProgressBar } from "@/components/podcasts/ProgressBar";
 import { TranscriptViewer } from "@/components/podcasts/TranscriptViewer";
 import { PodcastMetadata } from "@/components/podcasts/PodcastMetadata";
 import { StatusBadge } from "@/components/podcasts/StatusBadge";
@@ -21,10 +21,10 @@ import { ConfirmDialog } from "@/components/podcasts/ConfirmDialog";
 import { Podcast, TranscriptSegment } from "@/lib/types/podcast.types";
 import { toast } from "sonner";
 
-export default function PodcastDetailPage({ 
-  params 
-}: { 
-  params: Promise<{ id: string }> 
+export default function PodcastDetailPage({
+  params
+}: {
+  params: Promise<{ id: string }>
 }) {
   const router = useRouter();
   const playerRef = useRef<{ seekTo: (time: number) => void } | null>(null);
@@ -41,17 +41,18 @@ export default function PodcastDetailPage({
       try {
         const resolvedParams = await params;
         setPodcastId(resolvedParams.id);
-        
+
         // Fetch podcast data from API
         const response = await fetch(`/api/podcasts/${resolvedParams.id}`);
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch podcast');
         }
-        
-        const data = await response.json();
-        setPodcast(data);
-        setEditedTitle(data.title || "");
+
+        const result = await response.json();
+        const podcastData = result.data || result; // Handle both {data: ...} and direct response
+        setPodcast(podcastData);
+        setEditedTitle(podcastData.title || "");
       } catch (error) {
         console.error("Error loading podcast:", error);
         // Don't show toast here - let the UI handle the error state
@@ -64,13 +65,51 @@ export default function PodcastDetailPage({
     initializePage();
   }, [params]);
 
+  // Polling for status updates
+  useEffect(() => {
+    if (!podcastId || !podcast) return;
+
+    // Poll every 3 seconds if podcast is processing or queued
+    if (podcast.status === "PROCESSING" || podcast.status === "QUEUED") {
+      const interval = setInterval(async () => {
+        try {
+          const response = await fetch(`/api/podcasts/${podcastId}`);
+          if (response.ok) {
+            const data = await response.json();
+            const newPodcast = data.data;
+
+            // Check if status changed to completed
+            if (podcast.status !== "COMPLETED" && newPodcast.status === "COMPLETED") {
+              toast.success("Podcast completed!", {
+                description: "Your podcast has been successfully generated.",
+              });
+            }
+
+            // Check if status changed to failed
+            if (podcast.status !== "FAILED" && newPodcast.status === "FAILED") {
+              toast.error("Generation failed", {
+                description: newPodcast.error || "An error occurred during generation.",
+              });
+            }
+
+            setPodcast(newPodcast);
+          }
+        } catch (error) {
+          console.error("Error polling podcast status:", error);
+        }
+      }, 3000);
+
+      return () => clearInterval(interval);
+    }
+  }, [podcastId, podcast]);
+
   const handleBack = () => {
     router.push("/dashboard/podcasts");
   };
 
   const handleShare = () => {
     if (!podcastId) return;
-    
+
     // Copy link to clipboard
     const url = `${window.location.origin}/dashboard/podcasts/${podcastId}`;
     navigator.clipboard.writeText(url);
@@ -79,12 +118,38 @@ export default function PodcastDetailPage({
     });
   };
 
-  const handleDownload = () => {
-    // TODO: Fetch signed S3 URL and trigger download
-    toast.success("Downloading...", {
-      description: "Your podcast download will begin shortly.",
-    });
-    console.log("Downloading podcast...");
+  const handleDownload = async () => {
+    if (!podcastId || !podcast?.audioUrl) {
+      toast.error("Download unavailable", {
+        description: "Audio file is not ready yet.",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/podcasts/${podcastId}/download`);
+
+      if (!response.ok) {
+        throw new Error("Failed to get download URL");
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.data.url) {
+        // Open download URL in new tab
+        window.open(data.data.url, '_blank');
+        toast.success("Downloading...", {
+          description: "Your podcast download will begin shortly.",
+        });
+      } else {
+        throw new Error("Invalid response from server");
+      }
+    } catch (error) {
+      console.error("Download error:", error);
+      toast.error("Download failed", {
+        description: "Unable to download podcast. Please try again.",
+      });
+    }
   };
 
   const handleDelete = () => {
@@ -93,30 +158,53 @@ export default function PodcastDetailPage({
 
   const confirmDelete = async () => {
     if (!podcastId) return;
-    
-    // TODO: API call to delete podcast
-    // await fetch(`/api/podcasts/${podcastId}`, { method: 'DELETE' });
-    
-    toast.error("Podcast deleted", {
-      description: "Your podcast has been successfully deleted.",
-    });
-    router.push("/dashboard/podcasts");
+
+    try {
+      const response = await fetch(`/api/podcasts/${podcastId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete podcast");
+      }
+
+      toast.success("Podcast deleted", {
+        description: "Your podcast has been successfully deleted.",
+      });
+      router.push("/dashboard/podcasts");
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("Delete failed", {
+        description: "Unable to delete podcast. Please try again.",
+      });
+    }
   };
 
   const handleSaveTitle = async () => {
     if (!podcast || !podcastId) return;
-    
-    // TODO: API call to update title
-    // await fetch(`/api/podcasts/${podcastId}`, {
-    //   method: 'PATCH',
-    //   body: JSON.stringify({ title: editedTitle })
-    // });
-    
-    setPodcast({ ...podcast, title: editedTitle });
-    setIsEditingTitle(false);
-    toast.success("Title updated", {
-      description: "Your podcast title has been saved.",
-    });
+
+    try {
+      const response = await fetch(`/api/podcasts/${podcastId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: editedTitle })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update title");
+      }
+
+      setPodcast({ ...podcast, title: editedTitle });
+      setIsEditingTitle(false);
+      toast.success("Title updated", {
+        description: "Your podcast title has been saved.",
+      });
+    } catch (error) {
+      console.error("Update error:", error);
+      toast.error("Update failed", {
+        description: "Unable to update title. Please try again.",
+      });
+    }
   };
 
   const handleCancelEdit = () => {
@@ -281,190 +369,211 @@ export default function PodcastDetailPage({
         {/* Left Column - Main Content */}
         <div className="lg:col-span-2 space-y-8">
           {/* QUEUED State */}
-            {podcast.status === "QUEUED" && (
-              <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 p-6">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-full bg-yellow-500/10 p-2">
-                    <div className="w-5 h-5 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-yellow-400 mb-1">
-                      Queued for Generation
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      Your podcast is in the queue and will begin processing shortly. This typically takes a few moments depending on server load.
-                    </p>
-                    <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>Position in queue: Calculating...</span>
-                    </div>
+          {podcast.status === "QUEUED" && (
+            <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 p-6">
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-yellow-500/10 p-2">
+                  <div className="w-5 h-5 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-yellow-400 mb-1">
+                    Queued for Generation
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Your podcast is in the queue and will begin processing shortly. This typically takes a few moments depending on server load.
+                  </p>
+                  <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>Position in queue: Calculating...</span>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* PROCESSING State */}
-            {podcast.status === "PROCESSING" && (
-              <ProgressIndicator
+          {/* PROCESSING State */}
+          {podcast.status === "PROCESSING" && (
+            <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-6">
+              <ProgressBar
                 progress={podcast.progress || 0}
-                currentStep={podcast.currentStep || "Processing..."}
-                startTime={new Date(podcast.createdAt)}
-                onCancel={() => console.log("Cancel generation")}
+                status="PROCESSING"
+                currentStep={podcast.currentStep}
               />
-            )}
+            </div>
+          )}
 
-            {/* COMPLETED State - Audio Player */}
-            {podcast.status === "COMPLETED" && podcast.audioUrl && (
-              <PodcastPlayer
-                ref={playerRef}
-                audioUrl={podcast.audioUrl}
-                duration={podcast.audioDuration || 0}
-                title={podcast.title || "Untitled Podcast"}
-              />
-            )}
+          {/* COMPLETED State - Audio Player */}
+          {podcast.status === "COMPLETED" && podcast.audioUrl && (
+            <PodcastPlayer
+              ref={playerRef}
+              audioUrl={podcast.audioUrl}
+              duration={podcast.audioDuration || 0}
+              title={podcast.title || "Untitled Podcast"}
+            />
+          )}
 
-            {/* FAILED State */}
-            {podcast.status === "FAILED" && (
-              <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-6">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-full bg-red-500/10 p-2">
-                    <X className="w-5 h-5 text-red-400" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-red-400 mb-1">
-                      Generation Failed
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {podcast.errorMessage || "An error occurred while generating your podcast. This could be due to content issues, API limits, or server errors."}
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-400 border-red-500/20 hover:bg-red-500/10"
-                        onClick={() => {
-                          // TODO: Retry generation API call
+          {/* FAILED State */}
+          {podcast.status === "FAILED" && (
+            <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-6">
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-red-500/10 p-2">
+                  <X className="w-5 h-5 text-red-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-red-400 mb-1">
+                    Generation Failed
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {podcast.errorMessage || "An error occurred while generating your podcast. This could be due to content issues, API limits, or server errors."}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-400 border-red-500/20 hover:bg-red-500/10"
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(`/api/podcasts/${podcastId}/retry`, {
+                            method: 'POST'
+                          });
+
+                          if (!response.ok) {
+                            throw new Error("Failed to retry podcast");
+                          }
+
                           toast.success("Retrying generation", {
                             description: "Your podcast has been queued for regeneration.",
                           });
-                        }}
-                      >
-                        Retry Generation
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          // TODO: View error details
-                          toast.error("Error details", {
-                            description: podcast.errorMessage || "No additional error details available.",
+
+                          // Refresh podcast data
+                          const updatedResponse = await fetch(`/api/podcasts/${podcastId}`);
+                          if (updatedResponse.ok) {
+                            const data = await updatedResponse.json();
+                            setPodcast(data.data);
+                          }
+                        } catch (error) {
+                          console.error("Retry error:", error);
+                          toast.error("Retry failed", {
+                            description: "Unable to retry podcast generation.",
                           });
-                        }}
-                      >
-                        View Details
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Transcript Section - Only show for COMPLETED */}
-            {podcast.status === "COMPLETED" && podcast.transcript && Array.isArray(podcast.transcript) && podcast.transcript.length > 0 && (
-              <TranscriptViewer 
-                transcript={podcast.transcript as TranscriptSegment[]}
-                onSeek={handleSeekToTimestamp}
-              />
-            )}
-
-            {/* No Transcript Available for non-completed podcasts */}
-            {podcast.status !== "COMPLETED" && (
-              <div className="rounded-lg border border-border/40 bg-card p-8 text-center">
-                <div className="text-muted-foreground">
-                  <h3 className="font-semibold text-foreground mb-2">Transcript Unavailable</h3>
-                  <p className="text-sm">
-                    The transcript will be available once the podcast generation is complete.
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Right Column - Metadata Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="lg:sticky lg:top-6 space-y-6">
-              {/* Status Info Card */}
-              <div className="rounded-lg border border-border/40 bg-card p-6">
-                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                  Status
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Current Status</span>
-                    <StatusBadge status={podcast.status} />
-                  </div>
-                  {podcast.status === "PROCESSING" && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Progress</span>
-                      <span className="text-sm font-medium text-foreground">
-                        {podcast.progress || 0}%
-                      </span>
-                    </div>
-                  )}
-                  {podcast.status === "COMPLETED" && podcast.completedAt && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Completed</span>
-                      <span className="text-sm font-medium text-foreground">
-                        {new Date(podcast.completedAt).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    </div>
-                  )}
-                  {podcast.status === "FAILED" && (
-                    <div className="pt-2 border-t border-border/40">
-                      <span className="text-xs text-red-400 block">
-                        Error: {podcast.errorMessage?.substring(0, 100) || "Unknown error"}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Metadata */}
-              <PodcastMetadata podcast={podcast} />
-
-              {/* Quick Actions for Completed Podcasts */}
-              {podcast.status === "COMPLETED" && (
-                <div className="rounded-lg border border-border/40 bg-card p-6">
-                  <h3 className="font-semibold text-foreground mb-4">Quick Actions</h3>
-                  <div className="space-y-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleDownload}
-                      className="w-full justify-start gap-2"
+                        }
+                      }}
                     >
-                      <Download className="w-4 h-4" />
-                      Download Audio
+                      Retry Generation
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
-                      onClick={handleShare}
-                      className="w-full justify-start gap-2"
+                      onClick={() => {
+                        toast.error("Error details", {
+                          description: podcast.errorMessage || "No additional error details available.",
+                        });
+                      }}
                     >
-                      <Share2 className="w-4 h-4" />
-                      Share Podcast
+                      View Details
                     </Button>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
+          )}
+
+          {/* Transcript Section - Only show for COMPLETED */}
+          {podcast.status === "COMPLETED" && podcast.transcript && Array.isArray(podcast.transcript) && podcast.transcript.length > 0 && (
+            <TranscriptViewer
+              transcript={podcast.transcript as TranscriptSegment[]}
+              onSeek={handleSeekToTimestamp}
+            />
+          )}
+
+          {/* No Transcript Available for non-completed podcasts */}
+          {podcast.status !== "COMPLETED" && (
+            <div className="rounded-lg border border-border/40 bg-card p-8 text-center">
+              <div className="text-muted-foreground">
+                <h3 className="font-semibold text-foreground mb-2">Transcript Unavailable</h3>
+                <p className="text-sm">
+                  The transcript will be available once the podcast generation is complete.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column - Metadata Sidebar */}
+        <div className="lg:col-span-1">
+          <div className="lg:sticky lg:top-6 space-y-6">
+            {/* Status Info Card */}
+            <div className="rounded-lg border border-border/40 bg-card p-6">
+              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                Status
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Current Status</span>
+                  <StatusBadge status={podcast.status} />
+                </div>
+                {podcast.status === "PROCESSING" && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Progress</span>
+                    <span className="text-sm font-medium text-foreground">
+                      {podcast.progress || 0}%
+                    </span>
+                  </div>
+                )}
+                {podcast.status === "COMPLETED" && podcast.completedAt && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Completed</span>
+                    <span className="text-sm font-medium text-foreground">
+                      {new Date(podcast.completedAt).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  </div>
+                )}
+                {podcast.status === "FAILED" && (
+                  <div className="pt-2 border-t border-border/40">
+                    <span className="text-xs text-red-400 block">
+                      Error: {podcast.errorMessage?.substring(0, 100) || "Unknown error"}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Metadata */}
+            <PodcastMetadata podcast={podcast} />
+
+            {/* Quick Actions for Completed Podcasts */}
+            {podcast.status === "COMPLETED" && (
+              <div className="rounded-lg border border-border/40 bg-card p-6">
+                <h3 className="font-semibold text-foreground mb-4">Quick Actions</h3>
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownload}
+                    className="w-full justify-start gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Audio
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleShare}
+                    className="w-full justify-start gap-2"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    Share Podcast
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
+      </div>
 
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
