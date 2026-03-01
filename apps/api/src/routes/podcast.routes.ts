@@ -58,6 +58,17 @@ router.get("/stats", requireAuth, async (req: AuthRequest, res, next) => {
 router.get("/:id", requireAuth, async (req: AuthRequest, res, next) => {
     try {
         const podcast = await PodcastService.findById(req.params.id!, req.user!.id);
+
+        // Replace S3 audioUrl with a presigned URL (valid 1 hour) so browser can play it
+        if (podcast.audioUrl && podcast.status === "COMPLETED") {
+            try {
+                podcast.audioUrl = await StorageService.getSignedDownloadUrl(podcast.audioUrl, 3600);
+            } catch (err) {
+                console.error("Failed to generate presigned URL:", err);
+                // Leave original URL — playback may fail but don't break the whole request
+            }
+        }
+
         res.json({ success: true, data: podcast });
     } catch (error) {
         next(error);

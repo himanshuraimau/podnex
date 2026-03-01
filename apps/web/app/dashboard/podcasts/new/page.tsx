@@ -94,8 +94,8 @@ export default function NewPodcastPage() {
       noteContent: "",
       duration: "SHORT",
       title: "",
-      hostVoice: "default",
-      guestVoice: "default",
+      hostVoice: "Sierra",
+      guestVoice: "Daniel",
       webhookUrl: "",
       noteId: "",
     },
@@ -495,18 +495,13 @@ Tips for best results:
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                      <SelectItem value="default">
-                                        Default (Warm & Friendly)
-                                      </SelectItem>
-                                      <SelectItem value="professional">
-                                        Professional
-                                      </SelectItem>
-                                      <SelectItem value="casual">
-                                        Casual
-                                      </SelectItem>
-                                      <SelectItem value="authoritative">
-                                        Authoritative
-                                      </SelectItem>
+                                      <SelectItem value="Sierra">Sierra — Warm &amp; Friendly</SelectItem>
+                                      <SelectItem value="Hannah">Hannah — Professional</SelectItem>
+                                      <SelectItem value="Melody">Melody — Casual</SelectItem>
+                                      <SelectItem value="Lauren">Lauren — Authoritative</SelectItem>
+                                      <SelectItem value="Emily">Emily — Bright</SelectItem>
+                                      <SelectItem value="Kaitlyn">Kaitlyn — Energetic</SelectItem>
+                                      <SelectItem value="Luna">Luna — Calm</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </FormItem>
@@ -551,18 +546,13 @@ Tips for best results:
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                      <SelectItem value="default">
-                                        Default (Engaging)
-                                      </SelectItem>
-                                      <SelectItem value="energetic">
-                                        Energetic
-                                      </SelectItem>
-                                      <SelectItem value="thoughtful">
-                                        Thoughtful
-                                      </SelectItem>
-                                      <SelectItem value="curious">
-                                        Curious
-                                      </SelectItem>
+                                      <SelectItem value="Daniel">Daniel — Engaging</SelectItem>
+                                      <SelectItem value="Noah">Noah — Energetic</SelectItem>
+                                      <SelectItem value="Ethan">Ethan — Thoughtful</SelectItem>
+                                      <SelectItem value="Jasper">Jasper — Curious</SelectItem>
+                                      <SelectItem value="Caleb">Caleb — Calm</SelectItem>
+                                      <SelectItem value="Ronan">Ronan — Deep</SelectItem>
+                                      <SelectItem value="Zane">Zane — Dynamic</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </FormItem>

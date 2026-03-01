@@ -111,24 +111,22 @@ export class AudioCombinerService {
                 command.input(file);
             });
 
-            // Create filter complex for concatenation with normalization and fades
+            // Concatenate all segments
             const concatFilter = inputFiles
                 .map((_, i) => `[${i}:a]`)
                 .join("") + `concat=n=${inputFiles.length}:v=0:a=1[concat]`;
 
-            // Add loudness normalization (EBU R128 standard)
-            // Add fade in (0.5s) and fade out (0.5s)
+            // Normalize loudness (EBU R128) — no fades, they were causing silence
             const filterComplex = [
                 concatFilter,
-                "[concat]loudnorm=I=-16:TP=-1.5:LRA=11[normalized]",
-                "[normalized]afade=t=in:st=0:d=0.5,afade=t=out:st=0:d=0.5[out]"
+                "[concat]loudnorm=I=-16:TP=-1.5:LRA=11[out]"
             ].join(";");
 
             command
                 .complexFilter(filterComplex)
                 .outputOptions(["-map", "[out]"])
                 .audioCodec("libmp3lame")
-                .audioBitrate("192k") // Increased from 128k for better quality
+                .audioBitrate("192k")
                 .audioFrequency(44100)
                 .output(outputPath)
                 .on("end", () => resolve())
